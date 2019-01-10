@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>任务清单</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="node_modules/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
+</head>
+<body>
+<div style="height: 80px">&nbsp; </div>
+<div class="msg">
+    <span class="msg-content"></span>
+    <span class="anchor confirmed">知道了</span>
+</div>
+<div class="container">   <!--总容器开始  -->
+    <h1>我的任务</h1>
+    <form class="add-task">
+        <input name="content" type="text" placeholder="e.g 三点开会">
+        <button type="submit">submit</button>
+    </form>
+    <div class="task-list">  <!-- 清单列表开始  -->
+
+    </div>   <!-- 清单列表结束  -->
+    <div class="task-detail-mask"></div>
+    <div class="task-detail">  <!-- 任务详情  -->
+    </div><!-- 任务详情结束  -->
+</div>   <!--总容器结束  -->
+<video class="alert" src="alert.mp3"></video>
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/store/store.js"></script>
+<script src="js/base.js"></script>
+<script src="node_modules/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+</body>
+</html>
