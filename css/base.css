@@ -1,205 +1,214 @@
-*{
+* {
     /* background: rgba(0, 0, 0, .1);*/
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    -webkit-transition: background 200ms ;
-    -moz-transition: background 200ms ;
-    -ms-transition: background 200ms ;
-    -o-transition: background 200ms ;
-    transition: background 200ms ;
-    outline:0;
+    -webkit-transition: background 200ms;
+    -moz-transition: background 200ms;
+    -ms-transition: background 200ms;
+    -o-transition: background 200ms;
+    transition: background 200ms;
+    outline: 0;
 }
 
-body{
+body {
     background: #24b8d2;
     color: #fff;
 }
 
-.container{
+.container {
     max-width: 800px;
     margin: 0 auto;
     position: relative;
 }
 
-h1{
+h1 {
     text-align: center;
 }
 
-.task-list{
+.task-list {
     margin: 10px 0;
 }
 
-.task-item, input, .task-detail-mask, button{
+.task-item,
+input,
+.task-detail-mask,
+button {
     border-radius: 5px;
-    padding:7px;
+    padding: 7px;
 }
 
-.add-task input[type=text],.add-task input[type=text]{
+.add-task input[type=text],
+.add-task input[type=text] {
     display: block;
-    width:100%;
-    border:0;
+    width: 100%;
+    border: 0;
     background-color: #acbfde;
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
     -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
 }
 
-.task-detail input[type=text],.task-detail input[type=text]{
+.task-detail input[type=text],
+.task-detail input[type=text] {
     display: block;
-    width:100%;
-    border:0;
+    width: 100%;
+    border: 0;
     background-color: #fff;
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
     -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
 }
 
-textarea{
+textarea {
     display: block;
     background-color: #eee;
-    width:100%;
-    border:0;
-    height:80px;
+    width: 100%;
+    border: 0;
+    height: 80px;
     border-radius: 5px;
-    padding:7px;
+    padding: 7px;
 }
 
-input[type=text]:hover, input[type=text]:hover,textarea:hover,
-input[type=text]:focus, input[type=text]:focus{
+input[type=text]:hover,
+input[type=text]:hover,
+textarea:hover,
+input[type=text]:focus,
+input[type=text]:focus {
     background-color: #fff;
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);
     -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);
 }
 
-button{
+button {
     display: inline-block;
-    border:0;
+    border: 0;
     cursor: pointer;
 }
 
-.add-task input[type=text]{
+.add-task input[type=text] {
     float: left;
-    width:84%;
-    margin-right:1%;
-    -webkit-box-shadow: 0 2px 3px rgba(0,0,0,.4) ;
-    -moz-box-shadow: 0 2px 3px rgba(0,0,0,.4);
-    box-shadow: 0 2px 3px rgba(0,0,0,.4);
+    width: 84%;
+    margin-right: 1%;
+    -webkit-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    -moz-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
 }
 
-.add-task button[type=submit]{
-    width:15%;
+.add-task button[type=submit] {
+    width: 15%;
     background-color: #acbfde;
-    -webkit-box-shadow: 0 2px 3px rgba(0,0,0,.4) ;
-    -moz-box-shadow: 0 2px 3px rgba(0,0,0,.4);
-    box-shadow: 0 2px 3px rgba(0,0,0,.4);
+    -webkit-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    -moz-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
 }
 
 button.primary,
 
-.add-task button[type=submit]:hover{
+.add-task button[type=submit]:hover {
     background: #7da0d8;
 }
 
-.task-item{
-    padding:10px;
+.task-item {
+    padding: 10px;
     background: #fff;
-    color:#333;
+    color: #333;
     margin-bottom: 2px;
     border-radius: 5px;
-    -webkit-box-shadow: 0 2px 3px rgba(0,0,0,.4) ;
-    -moz-box-shadow: 0 2px 3px rgba(0,0,0,.4);
-    box-shadow: 0 2px 3px rgba(0,0,0,.4);
+    -webkit-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    -moz-box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .4);
     cursor: pointer;
 }
 
-.task-item:hover{
+.task-item:hover {
     background: #eee;
 }
 
-.task-detail{
+.task-detail {
     background-color: #fff;
     color: #333;
-    width:50%;
-    padding:10px;
-    bottom:0;
-    right:0;
+    width: 50%;
+    padding: 10px;
+    bottom: 0;
+    right: 0;
     overflow: auto;
 }
 
-.task-detail .content{
-    padding:10px;
+.task-detail .content {
+    padding: 10px;
     font-weight: 900;
     cursor: pointer;
 }
 
-.task-detail > *{
-    margin-bottom:10px;
+.task-detail>* {
+    margin-bottom: 10px;
 }
 
-.task-detail-mask, .task-detail{
+.task-detail-mask,
+.task-detail {
     border-radius: 8px;
     position: absolute;
     display: none;
 }
 
-.task-detail-mask{
-    top:0;
-    bottom:0;
-    right:0;
-    left:0;
-    background: rgba(30,30,30,0.6);
+.task-detail-mask {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: rgba(30, 30, 30, 0.6);
     position: fixed;
 }
 
-.task-content{
-    margin-left:10px;
+.task-content {
+    margin-left: 10px;
 }
 
-.action{
+.action {
     color: #888;
-    font-size:90%;
+    font-size: 90%;
 }
 
-.action:hover{
-    color:#333;
-}
-
-.fr{
-    float: right;
-}
-
-.task-item.completed{
-    color: #aaa;
-    background: rgba(255,255,255,.7);
-    opacity: 0.4;
-}
-
-.task-item.completed:after{
-    content: " ";
-    height:1px;
-    background: #aaa;
-    width:88%;
-    position: relative;
-    top:-10px;
-    display: block;
-    float: left;
-    margin-left:20px;
-}
-
-.msg{
-    display: none;
-    text-align: center;
-    background: #ffe264;
-    padding:10px;
+.action:hover {
     color: #333;
 }
 
-.anchor{
+.fr {
+    float: right;
+}
+
+.task-item.completed {
+    color: #aaa;
+    background: rgba(255, 255, 255, .7);
+    opacity: 0.4;
+}
+
+.task-item.completed:after {
+    content: " ";
+    height: 1px;
+    background: #aaa;
+    width: 88%;
+    position: relative;
+    top: -10px;
+    display: block;
+    float: left;
+    margin-left: 20px;
+}
+
+.msg {
+    display: none;
+    text-align: center;
+    background: #ffe264;
+    padding: 10px;
+    color: #333;
+}
+
+.anchor {
     cursor: pointer;
 }
 
-.alert{
-    opacity:0;
+.alert {
+    opacity: 0;
 }

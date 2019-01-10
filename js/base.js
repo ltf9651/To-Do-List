@@ -1,214 +1,350 @@
 ;
-(function() {
-	'use strict';
+(function () {
+    'use strict';
 
-	var task_list = [],
-		$form_add_task = $('.add-task')
-		, $delete_trigger
-		, $detail_trigger
-		, $task_detail = $('.task-detail')
-		, $update_form
-		, $task_detail_content
-		, $task_detail_content_input
-		, $checkbox_trigger
-		;
+    var $form_add_task = $('.add-task'),
+        $body = $('body'),
+        task_list = [],
+        $delete_task_trigger, $detail_task_trigger, $task_detail = $('.task-detail'),
+        $task_detail_mask = $('.task-detail-mask'),
+        current_index, $update_form, $task_detail_content, $task_detail_content_input, $checkbox_complete_trigger, $alert = $('.alert');
 
-	init();
+    init();
 
-	function init() {
-		task_list = store.get('task_list') || [];
-		if(task_list.length) {
-			render_task_list();
-		}
-		task_remind_check();
-	}
+    $form_add_task.on('submit', function (e) {
+        var new_task = {},
+            $input;
+        /*禁用默认行为*/
+        e.preventDefault();
+        /*获取新Task的值*/
+        $input = $(this).find('input[name=content]');
+        new_task.content = $input.val();
+        /*如果新Task为空直接返回，否则继续执行*/
+        if (!new_task.content) return;
+        /*存入新Task*/
+        if (add_task(new_task)) {
+            $input.val(null);
+        }
+    })
 
-	$form_add_task.on('submit', function(e) {
-		e.preventDefault();
-		var new_task = {},
-			$input;
-		$input = $(this).find('input[name=content]');
-		new_task.content = $input.val();
-		if(!new_task.content) return;
-		if(add_task(new_task)) {
-			$input.val('');
-		}
-	})
+    function add_task(new_task) {
+        /*添加新Task*/
+        task_list.push(new_task);
+        /*更新localstorage*/
+        refresh_task_list();
+        return true;
+    }
 
-	function add_task(new_task) {
-		if(!new_task) return;
-		task_list.push(new_task);
-		refresh_task_list();
-		return true;
-	}
+    /*刷新数据并渲染*/
+    function refresh_task_list() {
+        store.set('task_list', task_list);
+        render_task_list();
+    }
 
-	function refresh_task_list() {
-		store.set('task_list', task_list);
-		render_task_list();
-	}
+    /*查找监听所有删除按钮的点击事件*/
+    function listen_task_delete() {
+        $delete_task_trigger.on('click', function () {
+            var $this = $(this);
+            var $item = $this.parent().parent();
+            var index = $item.data('index');
+            pop('确定要删除吗？').then(function (r) {
+                r ? delete_task(index) : null;
+            });
+        })
+    }
 
-	function render_task_list() {
-		var $task_list = $('.task-list');
-		$task_list.html('');
-		var completed_items = [];
-		for(var i = 0; i < task_list.length; i++) {
-			var item = task_list[i];
-			if	(item && item.complete == true){
-				completed_items[i] = item;
-			}else{
-				var $task_item;
-				$task_item = render_task_item(item, i);
-			}
-			$task_list.prepend($task_item);
-		}
-		
-		for(var j = 0; j < completed_items.length; j++){
-			var item = render_task_item(completed_items[j], j);
-			if(!item) continue;
-			item.addClass('completed');
-			$task_list.append(item)
-		}
+    function listen_checkbox_complete() {
+        $checkbox_complete_trigger.on('click', function () {
+            var index = $(this).parent().parent().data('index');
+            var item = store.get('task_list')[index];
+            if (item.complete) {
+                update_task(index, {
+                    complete: false
+                });
+            } else {
+                update_task(index, {
+                    complete: true
+                });
+            }
+        })
+    }
 
-		$delete_trigger = $('.action.delete');
-		listen_delete();
-		$detail_trigger = $('.action.detail');
-		listen_detail();
-		$checkbox_trigger = $('.task-list .complete');
-		listen_checkbox();
-	}
+    function listen_task_detail() {
+        $('.task-item').on('dblclick', function () {
+            var $this = $(this);
+            var index = $this.data('index');
+            show_task_detail(index);
+        });
 
-	function render_task_item(data, index) {
-		if(!data || index === undefined) return;
-		var tpl = '<div class="task-item" data-index="' + index + '">' +
-			'            <span><input class="complete" type="checkbox" ' + (data.complete ? 'checked' : '') + ' ></span>' +
-			'            <span class="task-content">' + data.content + '</span>' +
-			'            <span class="fr">' +
-			'                <span class="action detail">详细</span>' +
-			'                <span class="action delete">删除</span>' +
-			'            </span>' +
-			'        </div>';
-		return $(tpl);
-	}
+        $detail_task_trigger.on('click', function () {
+            var $this = $(this);
+            var $item = $this.parent().parent();
+            var index = $item.data('index');
+            show_task_detail(index);
+        })
+    }
 
-	function listen_delete() {
-		$delete_trigger.on('click', function() {
-			var index = $(this).parent().parent().data('index');
-			var r = confirm('确定删除吗？');
-			if(r) delete_task(index);
-		})
-	}
+    function show_task_detail(index) {
+        render_task_detail(index);
+        current_index = index;
+        $task_detail.show();
+        $task_detail_mask.show();
+    }
 
-	function delete_task(index) {
-		if(index === undefined || !task_list[index]) return;
-		delete task_list[index];
-		refresh_task_list();
-	}
+    /*渲染指定Task的详情*/
+    function render_task_detail(index) {
+        if (index === undefined || !task_list[index]) return;
+        var item = task_list[index];
+        var tpl =
+            '<form>\n' +
+            '            <!-- 任务标题  -->\n' +
+            '            <div class="content">' + item.content + '</div>\n' +
+            '            <div><!-- 任务描述  -->\n' +
+            '<div><input style="display: none;" type="text" name="content" value="' + (item.content || []) + '"></div>' +
+            '                <div class="desc">\n' +
+            '                    <textarea name="desc" cols="30" rows="10">' + (item.desc || []) + '</textarea>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '            <div class="remind"><!-- 任务定时提醒  -->\n' +
+            '<label>提醒时间:</label>' +
+            '                <input class="datetime" type="text" name="remind_date" value="' + (item.remind_date || '') + '">\n' +
+            '            </div>\n' +
+            '<div>' +
+            '    <button type="submit">更  新</button>\n' +
+            '</div>' +
+            '        </form>';
 
-	function listen_detail() {
-		$detail_trigger.on('click', function() {
-			var index = $(this).parent().parent().data('index');
-			show_task_detail(index);
-		})
+        $task_detail.html('');
+        $task_detail.html(tpl);
+        $('.datetime').datetimepicker();
+        $update_form = $task_detail.find('form');
+        $task_detail_content = $update_form.find('.content');
+        $task_detail_content_input = $update_form.find('[name=content]');
+        $task_detail_content.on('dblclick', function () {
+            $task_detail_content_input.show();
+            $task_detail_content.hide();
+        });
+        $update_form.on('submit', function (e) {
+            e.preventDefault();
+            var data = {};
+            data.content = $(this).find('[name=content]').val();
+            data.desc = $(this).find('[name=desc]').val();
+            data.remind_date = $(this).find('[name=remind_date]').val();
+            update_task(index, data);
+            hide_task_detail();
+        })
+    }
 
-		$('.task-item').on('dblclick', function() {
-			var index = $(this).data('index');
-			show_task_detail(index);
-		})
-	}
+    function update_task(index, data) {
+        if (index === undefined || !task_list[index]) return;
+        task_list[index] = $.extend({}, task_list[index], data);
+        refresh_task_list();
+    }
 
-	function show_task_detail(index) {
-		render_task_detail(index);
-		$('.task-detail').show();
-		$('.task-detail-mask').show();
-	}
+    $task_detail_mask.on('click', hide_task_detail);
 
-	function render_task_detail(index) {
-		if(index === undefined) return;
-		var item = task_list[index];
-		var tpl = '<form>' +
-			'            <!-- 任务标题  -->' +
-			'            <div class="content">' + item.content + '</div>' +
-			'            <div><!-- 任务描述  -->' +
-			'<div><input style="display: none;" type="text" name="content" value="' + (item.content || []) + '"></div>' +
-			'                <div class="desc">' +
-			'                    <textarea name="desc" cols="30" rows="10">' + (item.desc || []) + '</textarea>' +
-			'                </div>' +
-			'            </div>' +
-			'            <div class="remind"><!-- 任务定时提醒  -->' +
-			'<label>提醒时间:</label>' +
-			'                <input class="datetime" type="text" name="remind_date" value="' + (item.remind_date || '') + '">' +
-			'            </div>' +
-			'<div>' +
-			'    <button type="submit">更  新</button>' +
-			'</div>' +
-			'        </form>';
+    function hide_task_detail() {
+        $task_detail.hide();
+        $task_detail_mask.hide();
+    }
 
-		$task_detail.html('');
-		$task_detail.html(tpl);
-		$('.datetime').datetimepicker();
-		$update_form = $task_detail.find('form');
-		$task_detail_content = $update_form.find('.content');
-		$task_detail_content_input = $update_form.find('[name=content]');
-		$task_detail_content.on('dblclick', function() {
-			$task_detail_content.hide();
-			$task_detail_content_input.show();
-		})
-		$update_form.on('submit', function(e) {
-			e.preventDefault();
-			var data = {};
-			data.content = $(this).find('[name=content]').val();
-			data.desc = $(this).find('[name=desc]').val();
-			data.remind_date = $(this).find('[name=remind_date]').val();
-			update_task(index, data);
-			hide_task_detail();
-		})
-	}
+    function delete_task(index) {
+        if (index === undefined || !task_list[index]) return;
+        delete task_list[index];
+        /*更新localstorage*/
+        refresh_task_list();
+    }
 
-	$('.task-detail-mask').on('click', hide_task_detail);
+    function task_remind_check() {
+        var current_timestamp;
+        var interval = setInterval(function () {
+            for (var i = 0; i < task_list.length; i++) {
+                var item = store.get('task_list')[i];
+                var task_timestamp;
+                if (!item || !item.remind_date || item.informed) continue;
+                current_timestamp = (new Date()).getTime();
+                task_timestamp = (new Date(item.remind_date)).getTime();
+                if (current_timestamp - task_timestamp >= 1) {
+                    update_task(i, {
+                        informed: true
+                    });
+                    show_msg(item.content);
+                }
+            }
+        }, 500);
+    }
 
-	function hide_task_detail() {
-		$('.task-detail').hide();
-		$('.task-detail-mask').hide();
-	}
+    //到时提醒
+    function show_msg(msg) {
+        if (!msg) return;
+        $('.msg').find('.msg-content').html(msg);
+        $alert.get(0).play();
+        $('.msg').show();
+    }
 
-	function update_task(index, data) {
-		if(index === undefined || !data) return;
-		task_list[index] = $.extend({}, task_list[index], data);
-		refresh_task_list();
-	}
+    function listen_msg_event() {
+        $('.msg').find('.confirmed').on('click', function () {
+            hide_msg();
+        })
+    }
 
-	function listen_checkbox(){
-		$checkbox_trigger.on('click', function(){
-			var index = $(this).parent().parent().data('index');
-			var item = store.get('task_list')[index];
-			if	(item.complete){
-				update_task(index ,{complete: false})
-			}else{
-				update_task(index, {complete: true})
-			}
-		})
-	}
-	
-	function task_remind_check(){
-		var current_timestamp;
-		var interval = setInterval(function(){
-			for	(var i = 0; i < task_list.length; i++){
-				var item = store.get('task_list')[i];
-				if (!item || item.informed == true || !item.remind_date) continue;
-				var current_timestamp = (new Date()).getTime();
-				var task_timestamp = (new Date(item.remind_date)).getTime();
-				if	(current_timestamp - task_timestamp >= -1){
-					update_task(i, {informed:true})	
-					show_msg(item.content)
-				}
-			}
-		},500)
-	}
-	
-	function show_msg(msg){
-		if(!msg) return;
-		$('.msg').find('.msg-content').html(msg);
-		$('.msg').show();
-		console.log('s',1)
-	}
+    function hide_msg() {
+        $('.msg').hide();
+    }
+
+    function init() {
+        task_list = store.get('task_list') || [];
+        if (task_list.length) {
+            render_task_list();
+        }
+        task_remind_check();
+        listen_msg_event();
+    }
+
+    function pop(param) {
+        if (!param) console.error('需要标题!');
+
+        var conf = {},
+            $box, $mask, $confirm, $cancel, dfd, confirmed;
+        dfd = $.Deferred();
+
+        if (typeof param == 'string') {
+            conf.title = param;
+        } else {
+            conf = $.extend(conf, param);
+        }
+
+        $box = $('<div>' +
+            '<div class="pop-title">' + conf.title + '</div>' +
+            '<div class="pop-content">' +
+            '<div><button style="margin-right: 5px;" class="primary confirm">确定</button><button class="cancel">取消</button></div>' +
+            '</div>' +
+            '</div>').css({
+            color: '#444',
+            width: 300,
+            height: 'auto',
+            padding: '15px 10px',
+            background: '#fff',
+            position: 'fixed',
+            'border-radius': 3,
+            'box-shadow': '0 1px 2px rgba(0,0,0,.5)'
+        });
+
+        var $title = $box.find('.pop-title').css({
+            padding: '5px 10px',
+            'font-weight': 900,
+            'font-size': 20,
+            'text-align': 'center'
+        });
+
+        var $content = $box.find('.pop-content').css({
+            padding: '5px 10px',
+            'text-align': 'center   '
+        });
+
+        $confirm = $content.find('button.confirm');
+        $cancel = $content.find('button.cancel');
+
+        $mask = $('<div></div>').css({
+            position: 'fixed',
+            background: 'rgba(0,0,0,.5)',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+        });
+
+        var timer = setInterval(function () {
+            if (confirmed !== undefined) {
+                dfd.resolve(confirmed);
+                clearInterval(timer);
+                hide_pop();
+            }
+        }, 50);
+
+        $confirm.on('click', function () {
+            confirmed = true;
+        });
+
+        $cancel.on('click', function () {
+            confirmed = false;
+        });
+
+        $mask.on('click', function () {
+            hide_pop();
+        });
+
+        function hide_pop() {
+            $mask.remove();
+            $box.remove();
+        }
+
+        function adjust_box_position() {
+            var win_width = $(window).width(),
+                win_height = $(window).height(),
+                box_width = $box.width(),
+                box_height = $box.height(),
+                move_x, move_y;
+
+            move_x = (win_width - box_width) / 2;
+            move_y = (win_height - box_height) / 2 - 20;
+            $box.css({
+                left: move_x,
+                top: move_y,
+            })
+        }
+
+        $(window).on('resize', function () {
+            adjust_box_position();
+        });
+
+        $mask.appendTo($body);
+        $box.appendTo($body);
+        $(window).resize();
+        return dfd.promise();
+    }
+
+    function render_task_list() {
+        var $task_list = $('.task-list');
+        $task_list.html('');
+        var complete_items = [];
+        for (var i = 0; i < task_list.length; i++) {
+            var item = task_list[i];
+            if (item && (item.complete == true)) {
+                complete_items[i] = item;
+            } else {
+                var $task = render_task_item(item, i);
+            }
+            $task_list.prepend($task);
+        }
+
+        for (var j = 0; j < complete_items.length; j++) {
+            $task = render_task_item(complete_items[j], j);
+            if (!$task) continue;
+            $task.addClass('completed');
+            $task_list.append($task);
+        }
+
+        $delete_task_trigger = $('.action.delete');
+        $detail_task_trigger = $('.action.detail');
+        $checkbox_complete_trigger = $('.task-list .complete');
+        listen_task_delete();
+        listen_task_detail();
+        listen_checkbox_complete();
+    }
+
+    function render_task_item(data, index) {
+        if (!data || index === undefined) return;
+        var list_item_item =
+            '<div class="task-item" data-index="' + index + '">  <!-- 任务开始  -->\n' +
+            '            <span><input class="complete" ' + (data.complete ? 'checked' : '') + ' type="checkbox"></span>\n' +
+            '            <span class="task-content">' + data.content + '</span>\n' +
+            '<span class="fr">' +
+            '            <span class="action delete">删除</span>\n' +
+            '            <span class="action detail">详细</span>\n' +
+            '</span>' +
+            '        </div>';
+        return $(list_item_item);
+    }
+
 })();
